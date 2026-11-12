@@ -10,7 +10,8 @@ and is configured entirely through Actions variables. See [PLAN.md](PLAN.md) for
 1. Public repo (free Actions minutes and Pages).
 2. Settings → Pages → Source: **GitHub Actions**.
 3. Locally: `claude setup-token`, then add it as the secret `CLAUDE_CODE_OAUTH_TOKEN`.
-4. Add a repository **variable** `LLMRSS_CONFIG` with your config (start from
+4. Add a repository **secret** `LLMRSS_CONFIG` with your config (not a variable: Actions
+   prints step env values in the public logs, secrets show as `***`) (start from
    `config.example.yaml`; set `feed.link` to your Pages URL).
 5. Run the `llmrss` workflow once by hand with `dry_run` on, then off.
 

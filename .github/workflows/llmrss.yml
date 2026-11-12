@@ -48,7 +48,7 @@ jobs:
 
       - name: Run
         env:
-          LLMRSS_CONFIG: ${{ vars.LLMRSS_CONFIG }}
+          LLMRSS_CONFIG: ${{ secrets.LLMRSS_CONFIG }}   # secret: env values are echoed in public logs
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           LLMRSS_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}

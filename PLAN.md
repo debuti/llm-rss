@@ -71,12 +71,13 @@ LLM-RSS/
 
 ## 3. Configuración (envvars de Actions)
 
-Una **variable de repositorio** `LLMRSS_CONFIG` con YAML (o JSON) multilínea
+Un **secret** de repositorio `LLMRSS_CONFIG` con YAML (no variable: Actions imprime los `env:`
+de cada paso en el log público; los secrets salen como `***`. Copia maestra: `config.yaml` local) (o JSON) multilínea
 (límite 48 KB por variable, de sobra). Secretos aparte.
 
 | Envvar | Tipo Actions | Uso |
 |---|---|---|
-| `LLMRSS_CONFIG` | variable | Config completa (YAML/JSON) |
+| `LLMRSS_CONFIG` | secret | Config completa (YAML/JSON) |
 | `CLAUDE_CODE_OAUTH_TOKEN` | secret | Auth de `claude -p` con la suscripción |
 | `GITHUB_TOKEN` | automático | Llamadas a la API de GitHub (trending/estrellas) |
 | `LLMRSS__<RUTA>` (p. ej. `LLMRSS__MODELS__SCORE`) | opcional | Override de cualquier clave (anidada con `__`) |
@@ -238,7 +239,7 @@ jobs:
           restore-keys: llmrss-db-
       - name: Run
         env:
-          LLMRSS_CONFIG: ${{ vars.LLMRSS_CONFIG }}
+          LLMRSS_CONFIG: ${{ secrets.LLMRSS_CONFIG }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LLMRSS_DRY_RUN: ${{ inputs.dry_run }}
