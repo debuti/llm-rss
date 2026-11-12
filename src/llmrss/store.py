@@ -50,6 +50,11 @@ MIGRATIONS = [
         scored INTEGER, published INTEGER, llm_calls INTEGER, errors TEXT
     );
     """,
+    """
+    CREATE TABLE weekly(
+        week TEXT PRIMARY KEY, ts TEXT NOT NULL, title TEXT NOT NULL, html TEXT NOT NULL
+    );
+    """,
 ]
 
 DEDUP_TITLE_WINDOW = timedelta(days=14)

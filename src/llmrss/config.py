@@ -31,7 +31,7 @@ class Models(_Strict):
 
 
 class Selection(_Strict):
-    threshold: float = Field(7.0, ge=0, le=10)
+    threshold: float = Field(5.0, ge=0, le=10)
     max_per_day: int = Field(10, ge=0)
     min_per_day: int = Field(0, ge=0)
 

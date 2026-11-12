@@ -10,7 +10,7 @@ sources:
 
 def test_defaults():
     cfg = load({"LLMRSS_CONFIG": BASE})
-    assert cfg.selection.threshold == 7
+    assert cfg.selection.threshold == 5
     assert cfg.models.score.startswith("claude-")
     assert cfg.sources[0].prefilter is True
 

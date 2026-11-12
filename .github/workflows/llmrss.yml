@@ -1,0 +1,85 @@
+name: llmrss
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # UTC; Actions may delay it
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (don't publish)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write      # read artifacts (DB recovery) and delete old caches
+  pages: write
+  id-token: write
+
+concurrency:
+  group: llmrss
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with: {enable-cache: true}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Install Claude Code
+        run: npm i -g --silent @anthropic-ai/claude-code
+      - name: Install
+        run: uv sync --frozen --no-dev -q
+
+      - name: Restore state
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: state/
+          key: llmrss-db-${{ github.run_id }}
+          restore-keys: llmrss-db-
+
+      - name: Run
+        env:
+          LLMRSS_CONFIG: ${{ vars.LLMRSS_CONFIG }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          LLMRSS_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+          LLMRSS_CACHE_HIT: ${{ steps.cache.outputs.cache-matched-key != '' }}
+        run: |
+          uv run --no-sync llmrss validate-config
+          uv run --no-sync llmrss run
+          uv run --no-sync llmrss weekly
+
+      - name: Save state
+        if: always() && !inputs.dry_run && hashFiles('state/llmrss.db') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: state/
+          key: llmrss-db-${{ github.run_id }}
+      - name: Back up state
+        if: always() && !inputs.dry_run && hashFiles('state/llmrss.db') != ''
+        uses: actions/upload-artifact@v4
+        with: {name: llmrss-db, path: state/, retention-days: 30}
+      - name: Delete old caches (keep 3)
+        if: always() && !inputs.dry_run
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          gh cache list --key llmrss-db- --sort created_at --order desc --limit 100 \
+            --json id --jq '.[3:][].id' | xargs -r -n1 gh cache delete || true
+
+      - name: Upload site
+        if: ${{ !inputs.dry_run }}
+        uses: actions/upload-pages-artifact@v3
+        with: {path: public/}
+      - name: Deploy site
+        id: deploy
+        if: ${{ !inputs.dry_run }}
+        uses: actions/deploy-pages@v4

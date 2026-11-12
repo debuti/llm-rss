@@ -96,7 +96,7 @@ models:
   weekly: claude-opus-5-5
 
 selection:
-  threshold: 7            # puntuación mínima 0–10
+  threshold: 5            # puntuación mínima 0–10 (calibrado: 7 casi no se alcanza)
   max_per_day: 10
   min_per_day: 0          # no rellenar si no hay nada bueno
 
@@ -267,8 +267,7 @@ jobs:
 - Mitigaciones, en orden:
   1. Una ejecución diaria mantiene la cache viva.
   2. Una **copia en artifact** en cada ejecución (30 días).
-  3. Si no hay cache (`LLMRSS_CACHE_HIT=false`), `llmrss run` intenta recuperar la BD del
-     último artifact (`gh run download`). Si tampoco hay, **siembra** `published` desde el
+  3. Si no hay BD, `llmrss run` intenta recuperar la del último artifact (API de GitHub). Si tampoco hay, **siembra** `published` desde el
      `feed.xml` ya publicado en Pages, para no duplicar ni perder el feed. Se pierden las
      tendencias, no el feed.
 - Limpieza: un paso opcional borra las caches `llmrss-db-*` salvo las 3 más recientes
@@ -279,8 +278,8 @@ jobs:
   feed es público. Las variables y secretos no se ven, pero los **logs sí**: no imprimir perfil,
   config ni prompts.
 - **60 días de inactividad**: en repos públicos, GitHub desactiva los workflows programados si
-  no hay actividad en el repo. `keepalive.yml` (mensual, `contents: write`) hace un commit vacío,
-  que cuenta como actividad y mantiene vivos ambos workflows.
+  no hay actividad en el repo. `keepalive.yml` (mensual, `actions: write`) los reactiva por API
+  (`PUT .../workflows/<wf>/enable`), sin commits vacíos.
 - **Token de suscripción**: `claude setup-token` genera un token de larga duración. Cuando
   caduque, la ejecución debe fallar con un mensaje claro ("renueva CLAUDE_CODE_OAUTH_TOKEN").
 - **Cuota**: unas 5–15 llamadas/día con los lotes por defecto. La ejecución comparte cuota con tu
@@ -304,11 +303,11 @@ jobs:
 
 ## 11. Hitos
 
-1. Esqueleto: config, fuentes RSS y HN, SQLite, dedup, `--no-llm`.
-2. LLM: prefiltro y puntuación con validación; feed.xml; `--dry-run` en local.
-3. Workflow de Actions: cache, artifact, Pages, keepalive.
-4. Recuperación sin cache y limpieza de caches.
-5. Tendencias semanales (`weekly.xml`).
+1. ✅ Esqueleto: config, fuentes RSS y HN, SQLite, dedup, `--no-llm`.
+2. ✅ LLM: prefiltro y puntuación con validación; feed.xml; `--dry-run` en local.
+3. ✅ Workflow de Actions: cache, artifact, Pages, keepalive.
+4. ✅ Recuperación sin cache y limpieza de caches.
+5. ✅ Tendencias semanales (`weekly.xml`).
 6. Calibración: 2 semanas revisando lo descartado y lo publicado. Ajustar la rúbrica y los
    ejemplos en la config.
 

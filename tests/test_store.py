@@ -39,6 +39,6 @@ def test_migrations_idempotent(tmp_path):
     p = tmp_path / "db.sqlite"
     Store(p).close()
     s = Store(p)
-    assert s.db.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert s.db.execute("PRAGMA user_version").fetchone()[0] == 2
     s.log_run(items_fetched=1, errors=["x"])
     assert s.count("runs") == 1

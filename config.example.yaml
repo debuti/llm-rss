@@ -10,7 +10,7 @@ models:
   weekly: claude-opus-5-5
 
 selection:
-  threshold: 7            # puntuación mínima 0–10
+  threshold: 5            # min score 0–10 (computed with `scoring`)
   max_per_day: 10
   min_per_day: 0          # no rellenar si no hay nada bueno
 

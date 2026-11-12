@@ -1,0 +1,21 @@
+name: keepalive
+# GitHub disables scheduled workflows in public repos after 60 days without activity.
+# Re-enabling them through the API resets that, without dummy commits.
+
+on:
+  schedule:
+    - cron: "41 6 1 * *"   # monthly
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          for wf in llmrss.yml keepalive.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable"
+          done
