@@ -29,7 +29,7 @@ scoring:                # score = novelty·a + impact·b + evidence·c − hype�
 feed:
   title: "LLM-RSS"
   link: "https://<usuario>.github.io/<repo>/"
-  description: "Lo que importa, sin paja"
+  description: "What matters, without the noise"
   keep_entries: 300
 
 retention_days: 365       # histórico para tendencias
