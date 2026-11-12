@@ -1,0 +1,57 @@
+profile: |
+  Ingeniero de firmware / low-level / Rust. Me interesan ideas que cambian las reglas:
+  nuevos paradigmas de computación, materiales, energía, biotech, hardware abierto,
+  protocolos, herramientas que reducen costes en órdenes de magnitud.
+  NO me interesan: reviews de producto, rumores, política, finanzas, lanzamientos incrementales.
+
+models:
+  prefilter: claude-haiku-5-5
+  score: claude-opus-5-5
+  weekly: claude-opus-5-5
+
+selection:
+  threshold: 7            # puntuación mínima 0–10
+  max_per_day: 10
+  min_per_day: 0          # no rellenar si no hay nada bueno
+
+batching:
+  prefilter_batch: 80     # títulos por llamada
+  score_batch: 15         # entradas con resumen por llamada
+  max_llm_calls_per_run: 40
+
+scoring:                # score = novelty·a + impact·b + evidence·c − hype·d + extra_sources·e
+  novelty: 0.35
+  impact: 0.35
+  evidence: 0.30
+  hype: 0.25
+  per_extra_source: 0.5
+
+feed:
+  title: "LLM-RSS"
+  link: "https://<usuario>.github.io/<repo>/"
+  description: "Lo que importa, sin paja"
+  keep_entries: 300
+
+retention_days: 365       # histórico para tendencias
+
+sources:
+  - {name: hackaday,  type: rss, url: "https://hackaday.com/blog/feed/"}
+  - {name: hn-front,  type: hn,  list: front_page, min_points: 100}
+  - {name: show-hn,   type: hn,  list: show, min_points: 5}
+  - {name: lobsters,  type: rss, url: "https://lobste.rs/rss"}
+  - {name: cnx,       type: rss, url: "https://www.cnx-software.com/feed/"}
+  - {name: spectrum,  type: rss, url: "https://spectrum.ieee.org/feeds/feed.rss"}
+  - {name: quanta,    type: rss, url: "https://www.quantamagazine.org/feed/"}
+  - {name: arxiv-cs-ar, type: rss, url: "https://rss.arxiv.org/rss/cs.AR", prefilter: true}
+  - {name: arxiv-cond-mat, type: rss, url: "https://rss.arxiv.org/rss/cond-mat.mtrl-sci", prefilter: true}
+  - {name: gh-trending, type: github_trending, language: "", since: daily}
+
+# Optional: override the default rubric
+# rubric: |
+#   ...
+# Optional calibration examples (titles)
+# examples:
+#   good: ["..."]
+#   bad: ["..."]
+# Optional tag aliases (merged before counting trends)
+# tag_aliases: {rust-lang: rust, ml: machine-learning}
