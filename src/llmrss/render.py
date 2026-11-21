@@ -23,6 +23,7 @@ def _dt(iso: str) -> datetime:
 def entries(store: Store, limit: int, preview: list[str] = ()) -> list[dict]:
     """Published entries (newest first), plus `preview` ids on top (dry-run)."""
     q = ("SELECT i.*, s.novelty, s.impact, s.evidence, s.hype, s.score, s.category, s.tags, s.why,"
+         " s.plain, s.glossary,"
          " {ts} AS pub_ts FROM items i JOIN scores s ON s.item_id=i.id {join} {where}"
          " ORDER BY pub_ts DESC, s.score DESC LIMIT ?")
     out = []
@@ -44,8 +45,16 @@ def _fmt(x) -> str:
 def description(e: dict) -> str:
     srcs = json.loads(e["seen_in_sources"])
     extra = json.loads(e["extra"])
-    parts = [f"<p>{html.escape(e['why'] or '')}</p>",
-             f"<p><b>Score {_fmt(e['score'])}</b> · novelty {_fmt(e['novelty'])} · impact "
+    parts = []
+    if e.get("plain"):
+        parts.append(f'<p class="plain"><b>In plain words:</b> {html.escape(e["plain"])}</p>')
+    parts.append(f'<p class="why">{html.escape(e["why"] or "")}</p>')
+    gloss = json.loads(e.get("glossary") or "[]")
+    if gloss:
+        parts.append('<ul class="glossary">' + "".join(
+            f"<li><b>{html.escape(g['term'])}</b>: {html.escape(g['meaning'])}</li>"
+            for g in gloss) + "</ul>")
+    parts += [f"<p><b>Score {_fmt(e['score'])}</b> · novelty {_fmt(e['novelty'])} · impact "
              f"{_fmt(e['impact'])} · evidence {_fmt(e['evidence'])} · hype {_fmt(e['hype'])}</p>"]
     seen = f"Seen in: {html.escape(', '.join(srcs))}"
     if extra.get("thread") and extra["thread"] != e["url"]:
@@ -116,7 +125,8 @@ def render_index(cfg, items: list[dict], last_run: dict | None) -> str:
                f"{last_run['new'] or 0} new, {last_run['published'] or 0} published")
     rows = "\n".join(
         f'<li><a href="{esc(e["url"])}">{esc(e["title"])}</a> <small>({_fmt(e["score"])})</small>'
-        f"<br><small>{esc(e['why'] or '')}</small></li>"
+        + (f"<br>{esc(e['plain'])}" if e.get("plain") else "")
+        + f"<br><small>{esc(e['why'] or '')}</small></li>"
         for e in items[:30]
     )
     return f"""<!doctype html>

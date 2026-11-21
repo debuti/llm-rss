@@ -74,7 +74,12 @@ def seed_from_feed(store: Store, xml_bytes: bytes) -> int:
             tags = [c.text for c in it.findall("category") if c.get("domain") == "tag" and c.text]
             m = _SEEN_RE.search(desc)
             seen = [s.strip() for s in m.group(1).split(",")] if m else ["recovered"]
-            why_m = re.match(r"\s*<p>(.*?)</p>", desc, re.S)
+            why_m = (re.search(r'<p class="why">(.*?)</p>', desc, re.S)
+                     or re.match(r"\s*<p>(.*?)</p>", desc, re.S))
+            plain_m = re.search(r'<p class="plain"><b>In plain words:</b> (.*?)</p>', desc, re.S)
+            gloss = [{"term": clean_text(t), "meaning": clean_text(d)} for t, d in re.findall(
+                r"<li><b>(.*?)</b>: (.*?)</li>",
+                (re.search(r'<ul class="glossary">(.*?)</ul>', desc, re.S) or [None, ""])[1])]
             m = _SCORE_RE.search(desc)
             sub = {k: float(v) for k, v in _SUB_RE.findall(desc)}
             iid = url_id(url)
@@ -85,10 +90,13 @@ def seed_from_feed(store: Store, xml_bytes: bytes) -> int:
             store.db.execute("INSERT OR IGNORE INTO prefilter VALUES (?,1,'recovered',?)", (iid, ts))
             store.db.execute(
                 "INSERT OR IGNORE INTO scores(item_id, novelty, impact, evidence, hype, score,"
-                " category, tags, why, model, ts) VALUES (?,?,?,?,?,?,?,?,?,'recovered',?)",
+                " category, tags, why, plain, glossary, model, ts)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,'recovered',?)",
                 (iid, sub.get("novelty"), sub.get("impact"), sub.get("evidence"), sub.get("hype"),
                  float(m.group(1)) if m else None, category or "other", json.dumps(tags),
-                 clean_text(why_m.group(1)) if why_m else "", ts))
+                 clean_text(why_m.group(1)) if why_m else "",
+                 clean_text(plain_m.group(1)) if plain_m else "",
+                 json.dumps(gloss, ensure_ascii=False), ts))
             store.db.execute("INSERT OR IGNORE INTO published VALUES (?,?,?)", (iid, FEED, ts))
             n += 1
     return n

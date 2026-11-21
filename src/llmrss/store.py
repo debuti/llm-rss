@@ -55,6 +55,10 @@ MIGRATIONS = [
         week TEXT PRIMARY KEY, ts TEXT NOT NULL, title TEXT NOT NULL, html TEXT NOT NULL
     );
     """,
+    """
+    ALTER TABLE scores ADD COLUMN plain TEXT NOT NULL DEFAULT '';
+    ALTER TABLE scores ADD COLUMN glossary TEXT NOT NULL DEFAULT '[]';
+    """,
 ]
 
 DEDUP_TITLE_WINDOW = timedelta(days=14)

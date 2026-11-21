@@ -23,6 +23,14 @@ Category: one of {{categories}}.
 "why": 2-3 sentences in English: what it is and why it could matter (or why not). Concrete,
 no hype words.
 
+"plain": 2-3 sentences in English for a curious non-expert: what problem this is about, what
+was done and why anyone should care, with an everyday analogy if it helps. No acronyms, no
+jargon, no numbers that need context.
+
+"glossary": every acronym or technical term used in "why" or in the title that a non-expert
+would not know, as [{"term": "MOF", "meaning": "one short plain sentence"}]. Spell out the
+acronym first in "meaning". Empty list if there are none.
+
 {{untrusted}}
 
 Input: a JSON list of items {"i", "title", "sources", "summary", "signals"}. "sources" lists
@@ -30,4 +38,5 @@ every independent source where it appeared; "signals" has numbers like HN points
 stars.
 Output: ONLY a JSON list with one object per item:
 [{"i": 0, "novelty": 0-10, "impact": 0-10, "evidence": 0-10, "hype": 0-10,
-  "category": "...", "tags": ["..."], "why": "..."}]
+  "category": "...", "tags": ["..."], "why": "...", "plain": "...",
+  "glossary": [{"term": "...", "meaning": "..."}]}]

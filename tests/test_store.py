@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from llmrss.sources import Item
-from llmrss.store import Store
+from llmrss.store import MIGRATIONS, Store
 
 T0 = datetime(2026, 11, 1, tzinfo=timezone.utc)
 
@@ -39,6 +39,6 @@ def test_migrations_idempotent(tmp_path):
     p = tmp_path / "db.sqlite"
     Store(p).close()
     s = Store(p)
-    assert s.db.execute("PRAGMA user_version").fetchone()[0] == 2
+    assert s.db.execute("PRAGMA user_version").fetchone()[0] == len(MIGRATIONS)
     s.log_run(items_fetched=1, errors=["x"])
     assert s.count("runs") == 1

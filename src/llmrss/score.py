@@ -22,6 +22,11 @@ MAX_PROMPT_TAGS = 300
 SUMMARY_CHARS = 1200
 
 
+class GlossaryEntry(BaseModel):
+    term: str
+    meaning: str
+
+
 class ItemScore(BaseModel):
     i: int
     novelty: float = Field(ge=0, le=10)
@@ -31,6 +36,8 @@ class ItemScore(BaseModel):
     category: str = "other"
     tags: list[str] = []
     why: str = ""
+    plain: str = ""
+    glossary: list[GlossaryEntry] = []
 
     @field_validator("category")
     @classmethod
@@ -149,10 +156,12 @@ def run(store: Store, cfg, llm: Claude) -> int:
                                                       for t in s.tags[:4]) if t))
                 cur = store.db.execute(
                     "INSERT OR IGNORE INTO scores(item_id, novelty, impact, evidence, hype, score,"
-                    " category, tags, why, model, ts) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    " category, tags, why, plain, glossary, model, ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (r["id"], s.novelty, s.impact, s.evidence, s.hype,
                      final_score(s, len(srcs), w, cfg.scoring), s.category, json.dumps(tags),
-                     s.why.strip(), cfg.models.score, ts),
+                     s.why.strip(), s.plain.strip(),
+                     json.dumps([g.model_dump() for g in s.glossary[:10]], ensure_ascii=False),
+                     cfg.models.score, ts),
                 )
                 if cur.rowcount:
                     scored += 1

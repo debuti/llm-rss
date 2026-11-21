@@ -62,7 +62,9 @@ def test_seed_roundtrip(cfg, fake_claude):
     assert recover.seed_weekly(fresh, weekly) == 1
     assert fresh.count("published") == 2
     row = fresh.db.execute("SELECT * FROM scores").fetchone()
-    assert row["score"] == 8.75 and row["why"] == "Because." and row["category"] == "hardware"
+    assert row["score"] == 8.75 and row["why"] == "Because." and row["plain"] == "Simply put."
+    assert json.loads(row["glossary"])[0]["term"] == "RISC-V"
+    assert row["category"] == "hardware"
     assert json.loads(row["tags"]) == ["risc-v", "open-hardware"]
     # nothing gets republished, and the rebuilt feed matches
     assert selection.choose(fresh, cfg) == []

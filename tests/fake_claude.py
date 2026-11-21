@@ -27,7 +27,8 @@ if r.get("echo_score") or r.get("echo_keep"):
         res = {"drop": []}
     else:
         res = [{"i": it["i"], "novelty": 9, "impact": 9, "evidence": 9, "hype": 1,
-                "category": "Hardware", "tags": ["RISC V", "open-hardware"], "why": "Because."}
+                "category": "Hardware", "tags": ["RISC V", "open-hardware"], "why": "Because.",
+                "plain": "Simply put.", "glossary": [{"term": "RISC-V", "meaning": "An open CPU design."}]}
                for it in items]
     r = {"result": json.dumps(res)}
 print(json.dumps(base | {"result": r["result"]}))
